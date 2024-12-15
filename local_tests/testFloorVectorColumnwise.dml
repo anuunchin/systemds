@@ -1,0 +1,15 @@
+# Create a random 6x5 matrix M with values between 0 and 10
+M = rand(rows=6, cols=5, min=0, max=10);
+
+# Column-wise scaling factor: 1x5 row vector (5 elements to match the 5 columns of M)
+S = matrix("0.2 0.4 0.6 0.8 1.0", rows=1, cols=5);
+
+# Apply quantization: M2 = floor(M * S)
+M2 = floor(M * S);
+
+# Print the results
+print("Original Matrix M:");
+print(toString(M));
+
+print("After applying floor(M * S) where S = " + toString(S) + ":");
+print(toString(M2));

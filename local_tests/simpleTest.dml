@@ -1,0 +1,10 @@
+# simpleTest.dml
+
+X = rand(rows=5, cols=3, min=1, max=10)   # Generate a 5x3 random matrix
+Y = X * 2                                 # Multiply every element by 2
+
+print("Matrix X:");
+print(toString(X));
+print("Matrix Y = X*2:");
+print(toString(Y));
+

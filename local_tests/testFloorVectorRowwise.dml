@@ -1,0 +1,14 @@
+# Create a random matrix M with values between 0 and 10
+M = rand(rows=5, cols=5, min=0, max=10);
+
+# Row scaling factor
+S = rand(rows=1, cols=5, min=0.1, max=1);
+
+# Apply quantization: M2 = floor(M * S)
+M2 = floor(M * S);
+
+print("Original Matrix M");
+print(toString(M));
+
+print("After applying floor(M * S) where S = " + toString(S) + ":");
+print(toString(M2));

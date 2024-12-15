@@ -1,0 +1,13 @@
+M = matrix("1 2 3 4 5 6 7 8 9", rows=3, cols=3);
+
+# Scaling factor - scalar
+S = 0.5; 
+
+# Apply quantization: M2 = floor(M * S)
+M2 = floor(M * S);
+
+#print("Original Matrix M:");
+#print(toString(M));
+
+#print("After applying floor(M * S) where S = " + S + ":");
+print(toString(M2));

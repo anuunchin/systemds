@@ -122,6 +122,14 @@ public class OptimizerUtils
 	public static final long SAFE_REP_CHANGE_THRES = 8 * 1024 *1024; //8MB
 	
 	/**
+	 * Enables the detection and fusion of the pattern floor(M * S) + compress(M2) 
+	 * into a single CLA compressed quantized matrix. This optimization fuses 
+	 * the two operations, which avoids materializing intermediate results 
+	 * and reduces computational overhead. This rewrite rule is enabled by default.
+	 */
+	public static boolean ALLOW_FLOOR_COMPRESSION_FUSION = true;
+
+	/**
 	 * Enables common subexpression elimination in dags. There is however, a potential tradeoff
 	 * between computation redundancy and data transfer between MR jobs. Since, we do not reason
 	 * about transferred data yet, this rewrite rule is enabled by default.
