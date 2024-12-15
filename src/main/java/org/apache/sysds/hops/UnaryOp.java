@@ -35,6 +35,7 @@ import org.apache.sysds.lops.CumulativeOffsetBinary;
 import org.apache.sysds.lops.CumulativePartialAggregate;
 import org.apache.sysds.lops.Data;
 import org.apache.sysds.lops.DeCompression;
+import org.apache.sysds.lops.FlooredCompression;
 import org.apache.sysds.lops.Local;
 import org.apache.sysds.lops.Lop;
 import org.apache.sysds.lops.PickByCount;
@@ -136,6 +137,9 @@ public class UnaryOp extends MultiThreadedHop
 					break;
 				case DECOMPRESS:
 					ret = new DeCompression(input.constructLops(), getDataType(), getValueType(), optFindExecType());
+					break;
+				case FLOOR_COMPRESS:
+					ret = new FlooredCompression(input.constructLops(), getDataType(), getValueType(), optFindExecType(), 0, k);
 					break;
 				case LOCAL:
 					ret = new Local(input.constructLops(), getDataType(), getValueType());
@@ -402,7 +406,7 @@ public class UnaryOp extends MultiThreadedHop
 				|| _op==OpOp1.ACOS || _op==OpOp1.ASIN || _op==OpOp1.ATAN  
 				|| _op==OpOp1.COSH || _op==OpOp1.SINH || _op==OpOp1.TANH 
 				|| _op==OpOp1.SQRT || _op==OpOp1.ROUND  
-				|| _op==OpOp1.SPROP || _op== OpOp1.COMPRESS || _op== OpOp1.DECOMPRESS
+				|| _op==OpOp1.SPROP || _op== OpOp1.COMPRESS || _op== OpOp1.DECOMPRESS || _op==OpOp1.FLOOR_COMPRESS
 				|| _op==OpOp1.LOCAL) //sparsity preserving
 			{
 				ret = new MatrixCharacteristics(dc.getRows(), dc.getCols(), -1, dc.getNonZeros());
@@ -450,7 +454,7 @@ public class UnaryOp extends MultiThreadedHop
 			|| _op == OpOp1.ROUND || _op == OpOp1.FLOOR || _op == OpOp1.CEIL
 			|| _op == OpOp1.SIGMOID || _op == OpOp1.SPROP || _op == OpOp1.SOFTMAX
 			|| _op == OpOp1.TAN || _op == OpOp1.TANH || _op == OpOp1.ATAN
-			|| _op == OpOp1.COMPRESS || _op == OpOp1.DECOMPRESS
+			|| _op == OpOp1.COMPRESS || _op == OpOp1.DECOMPRESS || _op == OpOp1.FLOOR_COMPRESS
 			|| _op == OpOp1.MEDIAN || _op == OpOp1.IQM);
 	}
 	
@@ -563,7 +567,7 @@ public class UnaryOp extends MultiThreadedHop
 			setDim1( input.getDim1() );
 			setDim2( input.getDim2() );
 			if( _op==OpOp1.ABS || _op==OpOp1.SQRT || _op==OpOp1.SPROP
-				|| _op==OpOp1.COMPRESS || _op==OpOp1.DECOMPRESS || _op==OpOp1.LOCAL) //sparsity preserving
+				|| _op==OpOp1.COMPRESS || _op==OpOp1.DECOMPRESS || _op==OpOp1.FLOOR_COMPRESS||_op==OpOp1.LOCAL) //sparsity preserving
 			{
 				setNnz( input.getNnz() );
 			}

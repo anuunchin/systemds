@@ -1,0 +1,151 @@
+package org.apache.sysds.runtime.instructions.cp;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.sysds.hops.OptimizerUtils;
+import org.apache.sysds.runtime.compress.CompressedMatrixBlockFactory;
+import org.apache.sysds.runtime.compress.CompressionStatistics;
+import org.apache.sysds.runtime.compress.SingletonLookupHashMap;
+import org.apache.sysds.runtime.compress.lib.CLALibBinCompress;
+import org.apache.sysds.runtime.compress.workload.WTreeRoot;
+import org.apache.sysds.runtime.controlprogram.context.ExecutionContext;
+import org.apache.sysds.runtime.frame.data.FrameBlock;
+import org.apache.sysds.runtime.frame.data.lib.FrameLibCompress;
+import org.apache.sysds.runtime.functionobjects.Builtin;
+import org.apache.sysds.runtime.instructions.InstructionUtils;
+import org.apache.sysds.runtime.matrix.data.MatrixBlock;
+import org.apache.sysds.runtime.matrix.operators.Operator;
+import org.apache.sysds.runtime.matrix.operators.UnaryOperator;
+
+public class FloorCompressionCPInstruction extends UnaryCPInstruction{
+	private static final Log LOG = LogFactory.getLog(FloorCompressionCPInstruction.class.getName());
+
+	private final int _singletonLookupID;
+	private final int _numThreads;
+
+	/** This is only for binned compression with 2 outputs */
+	protected final List<CPOperand> _outputs;
+
+	private FloorCompressionCPInstruction(Operator op, CPOperand in, CPOperand out, String opcode, String istr,
+		int singletonLookupID, int numThreads) {
+		super(CPType.Compression, op, in, null, null, out, opcode, istr);
+		_outputs = null;
+		this._singletonLookupID = singletonLookupID;
+		this._numThreads = numThreads;
+	}
+
+	private FloorCompressionCPInstruction(Operator op, CPOperand in1, CPOperand in2, List<CPOperand> out, String opcode,
+		String istr, int singletonLookupID, int numThreads) {
+		super(CPType.Compression, op, in1, in2, null, out.get(0), opcode, istr);
+		_outputs = out;
+		this._singletonLookupID = singletonLookupID;
+		this._numThreads = numThreads;
+	}
+
+	public static FloorCompressionCPInstruction parseInstruction(String str) {
+		InstructionUtils.checkNumFields(str, 3, 4, 5);
+		String[] parts = InstructionUtils.getInstructionPartsWithValueType(str);
+		String opcode = parts[0];
+		CPOperand in1 = new CPOperand(parts[1]);
+		CPOperand out = new CPOperand(parts[2]);
+		if(parts.length == 6) {
+			/** Compression with bins that returns two outputs */
+			List<CPOperand> outputs = new ArrayList<>();
+			outputs.add(new CPOperand(parts[3]));
+			outputs.add(new CPOperand(parts[4]));
+			int numThreads = Integer.parseInt(parts[5]);
+			return new FloorCompressionCPInstruction(null, in1, out, outputs, opcode, str, 0, numThreads);
+		}
+		else if(parts.length == 5) {
+			int treeNodeID = Integer.parseInt(parts[3]);
+			int numThreads = Integer.parseInt(parts[4]);
+			return new FloorCompressionCPInstruction(null, in1, out, opcode, str, treeNodeID, numThreads);
+		}
+		else {
+
+			int numThreads = Integer.parseInt(parts[3]);
+			return new FloorCompressionCPInstruction(null, in1, out, opcode, str, 0, numThreads);
+		}
+	}
+
+	@Override
+	public void processInstruction(ExecutionContext ec) {
+		if(input2 == null)
+			processSimpleCompressInstruction(ec);
+		else
+			processCompressByBinInstruction(ec);
+	}
+
+	private void processCompressByBinInstruction(ExecutionContext ec) {
+		final MatrixBlock d = ec.getMatrixInput(input2.getName());
+
+		final int k = OptimizerUtils.getConstrainedNumThreads(-1);
+
+		Pair<MatrixBlock, FrameBlock> out;
+
+		if(ec.isMatrixObject(input1.getName())) {
+			final MatrixBlock X = ec.getMatrixInput(input1.getName());
+			out = CLALibBinCompress.binCompress(X, d, k);
+			ec.releaseMatrixInput(input1.getName());
+		}
+		else {
+			final FrameBlock X = ec.getFrameInput(input1.getName());
+			out = CLALibBinCompress.binCompress(X, d, k);
+			ec.releaseFrameInput(input1.getName());
+		}
+
+		// Set output and release input
+		ec.releaseMatrixInput(input2.getName());
+		ec.setMatrixOutput(_outputs.get(0).getName(), out.getKey());
+		ec.setFrameOutput(_outputs.get(1).getName(), out.getValue());
+	}
+
+	private void processSimpleCompressInstruction(ExecutionContext ec) {
+		// final MatrixBlock in = ec.getMatrixInput(input1.getName());
+		final SingletonLookupHashMap m = SingletonLookupHashMap.getMap();
+
+		// Get and clear workload tree entry for this compression instruction.
+		final WTreeRoot root = (_singletonLookupID != 0) ? (WTreeRoot) m.get(_singletonLookupID) : null;
+		// We used to remove the key from the hash map, 
+		// however this is not correct since the compression statement 
+		// can be reused in multiple for loops.
+
+
+		if(ec.isFrameObject(input1.getName()))
+			processFrameBlockCompression(ec, ec.getFrameInput(input1.getName()), _numThreads, root);
+		else if(ec.isMatrixObject(input1.getName()))
+			processMatrixBlockCompression(ec, ec.getMatrixInput(input1.getName()), _numThreads, root);
+		else {
+			throw new NotImplementedException("Not supported other types of input for compression than frame and matrix");
+		}
+	}
+
+	private void processMatrixBlockCompression(ExecutionContext ec, MatrixBlock in, int k, WTreeRoot root) {
+		MatrixBlock floored = new MatrixBlock(in.getNumRows(), in.getNumColumns(), false);
+    	floored = in.unaryOperations(
+        	new UnaryOperator(Builtin.getBuiltinFnObject(Builtin.BuiltinCode.FLOOR)), 
+        floored);
+
+		Pair<MatrixBlock, CompressionStatistics> compResult = CompressedMatrixBlockFactory.compress(floored, k, root);
+		if(LOG.isTraceEnabled())
+			LOG.trace(compResult.getRight());
+		MatrixBlock out = compResult.getLeft();
+		if(LOG.isInfoEnabled())
+			LOG.info("Compression output class: " + out.getClass().getSimpleName());
+		// Set output and release input
+		ec.releaseMatrixInput(input1.getName());
+		ec.setMatrixOutput(output.getName(), out);
+	}
+
+	private void processFrameBlockCompression(ExecutionContext ec, FrameBlock in, int k, WTreeRoot root) {
+		FrameBlock compResult = FrameLibCompress.compress(in, k, root);
+		// Set output and release input
+		ec.releaseFrameInput(input1.getName());
+		ec.setFrameOutput(output.getName(), compResult);
+	}
+}

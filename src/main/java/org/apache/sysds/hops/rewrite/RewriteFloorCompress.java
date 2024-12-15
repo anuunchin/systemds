@@ -21,13 +21,17 @@ package org.apache.sysds.hops.rewrite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.sysds.common.Types.OpOp1;
 import org.apache.sysds.common.Types.OpOp2;
-import org.apache.sysds.hops.BinaryOp;
 import org.apache.sysds.hops.UnaryOp;
-import org.apache.sysds.hops.codegen.cplan.cuda.Unary;
+
+import org.apache.sysds.common.Types.DataType;
+import org.apache.sysds.common.Types.ValueType;
+
+import org.apache.sysds.hops.UnaryOp;
 import org.apache.sysds.hops.Hop;
 
 /**
@@ -40,7 +44,7 @@ public class RewriteFloorCompress extends HopRewriteRule
 {
     @Override
     public ArrayList<Hop> rewriteHopDAGs(ArrayList<Hop> roots, ProgramRewriteStatus state) 
-    {
+    {        
         if( roots == null )
             return null;
     
@@ -56,13 +60,25 @@ public class RewriteFloorCompress extends HopRewriteRule
         for (Entry<String, Hop> e : compresses.entrySet() )
         {
             String inputname = e.getKey();
-            Hop chop = e.getValue();
+            Hop compresshop = e.getValue();
             if (floors.containsKey(inputname)  //floors same name
-                &&   (floors.get(inputname).getBeginLine()<chop.getBeginLine() //compress after floor
-                   || floors.get(inputname).getEndLine()<chop.getEndLine()) ) //note: account for bug in line handling, TODO remove after line handling resolved
+                &&   (floors.get(inputname).getBeginLine()<compresshop.getBeginLine() //compress after floor
+                   || floors.get(inputname).getEndLine()<compresshop.getEndLine()) ) //note: account for bug in line handling, TODO remove after line handling resolved
             {
-                System.out.println("FOUND COMPRESS AFTER FLOOR!");
-                //TODO: create new fused HOP and replace parent connections
+                //retrieve the floor hop and inputs
+                Hop floorhop = floors.get(inputname);
+                Hop inputmatrix = floorhop.getInput().get(0); //TODO: this needs better handling
+
+                //create fused hop TO FINISH
+                UnaryOp fusedhop = new UnaryOp("test", DataType.MATRIX, ValueType.FP64, OpOp1.FLOOR_COMPRESS, inputmatrix);
+
+                //rewire compress consumers to fusedHop
+                List<Hop> parents = new ArrayList<>(compresshop.getParent());
+                for ( Hop p : parents )
+                {
+                    HopRewriteUtils.replaceChildReference(p, compresshop, fusedhop);
+                }
+                
             }
         }
         return roots;

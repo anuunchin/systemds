@@ -30,6 +30,7 @@ import org.apache.sysds.lops.Append;
 import org.apache.sysds.lops.Compression;
 import org.apache.sysds.lops.DataGen;
 import org.apache.sysds.lops.DeCompression;
+import org.apache.sysds.lops.FlooredCompression;
 import org.apache.sysds.lops.LeftIndex;
 import org.apache.sysds.lops.Local;
 import org.apache.sysds.lops.RightIndex;
@@ -64,6 +65,7 @@ import org.apache.sysds.runtime.instructions.cp.ParameterizedBuiltinCPInstructio
 import org.apache.sysds.runtime.instructions.cp.PrefetchCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuantilePickCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuantileSortCPInstruction;
+import org.apache.sysds.runtime.instructions.cp.FloorCompressionCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuaternaryCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.ReorgCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.ReshapeCPInstruction;
@@ -347,6 +349,7 @@ public class CPInstructionParser extends InstructionParser {
 		String2CPInstructionType.put( "partition", CPType.Partition);
 		String2CPInstructionType.put( Compression.OPCODE,  CPType.Compression);
 		String2CPInstructionType.put( DeCompression.OPCODE, CPType.DeCompression);
+		String2CPInstructionType.put( FlooredCompression.OPCODE, CPType.FloorCompression);
 		String2CPInstructionType.put( "spoof",     CPType.SpoofFused);
 		String2CPInstructionType.put( "prefetch",  CPType.Prefetch);
 		String2CPInstructionType.put( "_evict",  CPType.EvictLineageCache);
@@ -503,6 +506,9 @@ public class CPInstructionParser extends InstructionParser {
 			case EvictLineageCache:
 				return EvictCPInstruction.parseInstruction(str);
 			
+			case FloorCompression:
+				return FloorCompressionCPInstruction.parseInstruction(str);
+
 			default:
 				throw new DMLRuntimeException("Invalid CP Instruction Type: " + cptype );
 		}

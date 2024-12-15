@@ -532,7 +532,7 @@ public interface Types {
 		SIGMOID, //sigmoid function: 1 / (1 + exp(-X))
 		LOG_NZ, //sparse-safe log; ppred(X,0,"!=")*log(X)
 		
-		COMPRESS, DECOMPRESS,
+		COMPRESS, DECOMPRESS, FLOOR_COMPRESS,
 		LOCAL, // instruction to pull data back from spark forcefully and return a CP matrix.
 
 		//low-level operators //TODO used?
