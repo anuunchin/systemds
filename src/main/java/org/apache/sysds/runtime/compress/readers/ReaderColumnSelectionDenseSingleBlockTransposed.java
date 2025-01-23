@@ -29,6 +29,7 @@ public class ReaderColumnSelectionDenseSingleBlockTransposed extends ReaderColum
 
 	protected ReaderColumnSelectionDenseSingleBlockTransposed(MatrixBlock data, IColIndex colIndexes, int rl, int ru) {
 		super(colIndexes, rl, Math.min(ru, data.getNumColumns()) - 1);
+		System.out.println("This is ReaderColumnSelectionDenseSingleBlockTransposed");
 		_data = data.getDenseBlockValues();
 		_nColIn = data.getNumColumns();
 	}

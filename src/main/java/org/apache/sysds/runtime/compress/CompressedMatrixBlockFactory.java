@@ -133,6 +133,7 @@ public class CompressedMatrixBlockFactory {
 	}
 
 	public static Pair<MatrixBlock, CompressionStatistics> compress(MatrixBlock mb, int k, WTreeRoot root) {
+		System.out.println("Testing 3");
 		return compress(mb, k, new CompressionSettingsBuilder(), root);
 	}
 
@@ -200,6 +201,8 @@ public class CompressedMatrixBlockFactory {
 	 */
 	public static Pair<MatrixBlock, CompressionStatistics> compress(MatrixBlock mb, int k,
 		CompressionSettingsBuilder compSettings, WTreeRoot root) {
+		System.out.println("Testing 4");
+
 		CompressionSettings cs = compSettings.create();
 		ACostEstimate ice;
 		if(root == null)
@@ -274,6 +277,8 @@ public class CompressedMatrixBlockFactory {
 	}
 
 	private Pair<MatrixBlock, CompressionStatistics> compressMatrix() {
+		System.out.println("Testing 5");
+
 		if(mb.getNonZeros() < 0) {
 			LOG.warn("Recomputing non-zeros since it is unknown in compression");
 			mb.recomputeNonZeros();
@@ -294,6 +299,7 @@ public class CompressedMatrixBlockFactory {
 		res = new CompressedMatrixBlock(mb); // copy metadata and allocate soft reference
 
 		classifyPhase();
+
 		if(compressionGroups == null)
 			return abortCompression();
 
@@ -430,6 +436,8 @@ public class CompressedMatrixBlockFactory {
 	}
 
 	private void compressPhase() {
+		System.out.println("Testing 6");
+
 		List<AColGroup> c = ColGroupFactory.compressColGroups(mb, compressionGroups, compSettings, costEstimator, k);
 		res.allocateColGroupList(c);
 		_stats.compressedInitialSize = res.getInMemorySize();

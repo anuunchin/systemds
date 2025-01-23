@@ -123,6 +123,7 @@ public class CompressionCPInstruction extends ComputationCPInstruction {
 	}
 
 	private void processSimpleCompressInstruction(ExecutionContext ec) {
+		System.out.println("Testing 1");
 		// final MatrixBlock in = ec.getMatrixInput(input1.getName());
 		final SingletonLookupHashMap m = SingletonLookupHashMap.getMap();
 
@@ -143,6 +144,8 @@ public class CompressionCPInstruction extends ComputationCPInstruction {
 	}
 
 	private void processMatrixBlockCompression(ExecutionContext ec, MatrixBlock in, int k, WTreeRoot root) {
+		System.out.println("Testing 2");
+
 		Pair<MatrixBlock, CompressionStatistics> compResult = CompressedMatrixBlockFactory.compress(in, k, root);
 		if(LOG.isTraceEnabled())
 			LOG.trace(compResult.getRight());

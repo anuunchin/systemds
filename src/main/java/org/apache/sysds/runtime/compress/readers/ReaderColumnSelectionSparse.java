@@ -39,6 +39,7 @@ public class ReaderColumnSelectionSparse extends ReaderColumnSelection {
 
 	protected ReaderColumnSelectionSparse(MatrixBlock data, IColIndex colIndexes, int rl, int ru) {
 		super(colIndexes, rl, Math.min(ru, data.getNumRows()) - 1);
+		System.out.println("This is ReaderColumnSelectionSparse");
 		a = data.getSparseBlock();
 		empty = new DblArray(new double[colIndexes.size()]);
 	}

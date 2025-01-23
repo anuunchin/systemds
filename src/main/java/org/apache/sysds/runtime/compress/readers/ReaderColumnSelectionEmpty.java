@@ -27,6 +27,7 @@ public class ReaderColumnSelectionEmpty extends ReaderColumnSelection {
 
 	protected ReaderColumnSelectionEmpty(MatrixBlock data, IColIndex colIndices, int rl, int ru, boolean transposed) {
 		super(colIndices, rl, Math.min(ru, 1 - (transposed ? data.getNumColumns() : data.getNumRows())));
+		System.out.println("This is ReaderColumnSelectionEmpty");
 	}
 
 	protected DblArray getNextRow() {

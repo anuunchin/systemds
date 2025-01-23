@@ -69,7 +69,7 @@ public class RewriteFloorCompress extends HopRewriteRule
                 Hop floorhop = floors.get(inputname);
                 Hop inputmatrix = floorhop.getInput().get(0); //TODO: this needs better handling
 
-                //create fused hop TO FINISH
+                //create fused hop 
                 UnaryOp fusedhop = new UnaryOp("test", DataType.MATRIX, ValueType.FP64, OpOp1.FLOOR_COMPRESS, inputmatrix);
 
                 //rewire compress consumers to fusedHop

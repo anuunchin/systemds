@@ -29,6 +29,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.sysds.runtime.compress.CompressedMatrixBlock;
@@ -145,6 +147,7 @@ public class ColGroupFactory {
 	 */
 	public static List<AColGroup> compressColGroups(MatrixBlock in, CompressedSizeInfo csi, CompressionSettings cs,
 		ACostEstimate ce, int k) {
+		System.out.println("Testing 7");
 		return new ColGroupFactory(in, csi, cs, ce, k).compress();
 	}
 
@@ -152,8 +155,10 @@ public class ColGroupFactory {
 		try {
 			if(in instanceof CompressedMatrixBlock)
 				return CLALibCombineGroups.combine((CompressedMatrixBlock) in, csi, pool);
-			else
+			else {
+				System.out.println("Testing 8");
 				return compressExecute();
+			}
 		}
 		catch(Exception e) {
 			throw new DMLCompressionException("Compression Failed", e);
@@ -185,6 +190,7 @@ public class ColGroupFactory {
 	}
 
 	private List<AColGroup> compressColGroupsParallel() throws Exception {
+		System.out.println("Testing 9");
 
 		final List<CompressedSizeInfoColGroup> groups = csi.getInfo();
 		final int nGroups = groups.size();
@@ -208,12 +214,14 @@ public class ColGroupFactory {
 	}
 
 	protected AColGroup compressColGroup(CompressedSizeInfoColGroup cg) throws Exception {
+		System.out.println("Testing 12");
 		if(LOG.isDebugEnabled() && nCol < 1000 && ce != null) {
 			final Timing time = new Timing(true);
 			final AColGroup ret = compressColGroupAllSteps(cg);
 			logEstVsActual(time.stop(), ret, cg);
 			return ret;
 		}
+		System.out.println("Testing 13");
 		return compressColGroupAllSteps(cg);
 	}
 
@@ -237,6 +245,7 @@ public class ColGroupFactory {
 	}
 
 	private AColGroup compressColGroupAllSteps(CompressedSizeInfoColGroup cg) throws Exception {
+		System.out.println("Teting 14");
 		AColGroup g = compress(cg);
 		if(ce != null && ce.shouldSparsify() && nCol >= 4)
 			g = sparsifyFOR(g);
@@ -253,14 +262,17 @@ public class ColGroupFactory {
 	}
 
 	private AColGroup compress(CompressedSizeInfoColGroup cg) throws Exception {
+		System.out.println("Testing 15");
 		final IColIndex colIndexes = cg.getColumns();
+		System.out.println("Testing 15b");
 		final CompressionType ct = cg.getBestCompressionType();
 		final boolean t = cs.transposed;
+		System.out.println("Testing 15c");
 
 		// Fast path compressions
 		if(ct == CompressionType.EMPTY && !t)
 			return new ColGroupEmpty(colIndexes);
-		else if(ct == CompressionType.UNCOMPRESSED) // don't construct mapping if uncompressed
+		else if(ct == CompressionType.UNCOMPRESSED) // don't construct mapping if uncompressed {
 			return ColGroupUncompressed.create(colIndexes, in, t);
 		else if((ct == CompressionType.SDC || ct == CompressionType.CONST) //
 			&& in.isInSparseFormat() //
@@ -268,9 +280,9 @@ public class ColGroupFactory {
 			(colIndexes.size() > 1 && cg.getNumOffs() < 0.3 * nRow) //
 				|| colIndexes.size() == 1))
 			return compressSDCFromSparseTransposedBlock(colIndexes, cg.getNumVals(), cg.getTupleSparsity());
-		else if(ct == CompressionType.DDC)
+		else if(ct == CompressionType.DDC) 
 			return directCompressDDC(colIndexes, cg);
-		else if(ct == CompressionType.LinearFunctional)
+		else if(ct == CompressionType.LinearFunctional) 
 			return compressLinearFunctional(colIndexes, in, cs);
 		else if(ct == CompressionType.DDCFOR) {
 			AColGroup g = directCompressDDC(colIndexes, cg);
@@ -282,13 +294,17 @@ public class ColGroupFactory {
 			return compressSDCSingleColDirectBlock(colIndexes, cg.getNumVals());
 		}
 
+		System.out.println("Testing 15d");
 		final ABitmap ubm = BitmapEncoder.extractBitmap(colIndexes, in, cg.getNumVals(), cs);
+		System.out.println("Testing 15e");
+
 		if(ubm == null) // no values ... therefore empty
 			return new ColGroupEmpty(colIndexes);
 
 		final IntArrayList[] of = ubm.getOffsetList();
-		if(of.length == 1 && of[0].size() == nRow) // If this always constant
-			return ColGroupConst.create(colIndexes, DictionaryFactory.create(ubm));
+		if(of.length == 1 && of[0].size() == nRow) { // If this always constant
+			System.out.println("Testing 16");
+			return ColGroupConst.create(colIndexes, DictionaryFactory.create(ubm));}
 
 		final double tupleSparsity = colIndexes.size() > 4 ? cg.getTupleSparsity() : 1.0;
 
@@ -449,6 +465,7 @@ public class ColGroupFactory {
 		}
 	}
 
+	// this does not use the reader (single columns bc readers are slow for those)
 	private AColGroup directCompressDDC(IColIndex colIndexes, CompressedSizeInfoColGroup cg) throws Exception {
 		if(colIndexes.size() > 1)
 			return directCompressDDCMultiCol(colIndexes, cg);
@@ -862,6 +879,7 @@ public class ColGroupFactory {
 		private final int _step;
 
 		protected CompressTask(List<CompressedSizeInfoColGroup> groups, AColGroup[] ret, int off, int step) {
+			System.out.println("Testing 10");
 			_groups = groups;
 			_ret = ret;
 			_off = off;
@@ -870,6 +888,8 @@ public class ColGroupFactory {
 
 		@Override
 		public Object call() throws Exception {
+			System.out.println("Testing 11");
+
 			for(int i = _off; i < _groups.size(); i += _step)
 				_ret[i] = compressColGroup(_groups.get(i));
 			return null;

@@ -29,6 +29,7 @@ public class ReaderColumnSelectionDenseMultiBlock extends ReaderColumnSelection 
 
 	protected ReaderColumnSelectionDenseMultiBlock(MatrixBlock data, IColIndex colIndices, int rl, int ru) {
 		super(colIndices, rl, Math.min(ru, data.getNumRows()) - 1);
+		System.out.println("This is ReaderColumnSelectionDenseMultiBlock");
 		_data = data.getDenseBlock();
 	}
 

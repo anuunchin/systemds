@@ -59,7 +59,8 @@ public abstract class ReaderColumnSelection {
 		if(_rl >= _ru)
 			return null;
 		final DblArray ret = getNextRow();
-
+		System.out.println("Teting");
+		System.out.println(ret);
 		if(ret != null)
 			ret.resetHash();
 		return ret;

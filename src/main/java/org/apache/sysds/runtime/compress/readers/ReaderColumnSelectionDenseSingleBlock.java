@@ -40,6 +40,9 @@ public class ReaderColumnSelectionDenseSingleBlock extends ReaderColumnSelection
 		for(int i = 0; i < _colIndexes.size(); i++)
 			reusableArr[i] = _data[indexOff + _colIndexes.get(i)];
 
+			System.out.println("Teting");
+		System.out.println(reusableReturn);
+	
 		return reusableReturn;
 	}
 }

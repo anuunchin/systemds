@@ -43,6 +43,8 @@ public class ReaderColumnSelectionSparseTransposed extends ReaderColumnSelection
 
 	protected ReaderColumnSelectionSparseTransposed(MatrixBlock data, IColIndex colIndexes, int rl, int ru) {
 		super(colIndexes, rl, Math.min(ru, data.getNumColumns()));
+		System.out.println("This is ReaderColumnSelectionSparseTransposed");
+
 		sparsePos = new int[_colIndexes.size()];
 		a = data.getSparseBlock();
 		_rl = _rl + 1; // correct row since this iterator use the exact row

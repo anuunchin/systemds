@@ -55,6 +55,8 @@ public class CompressionSettingsBuilder {
 	private double minimumCompressionRatio = 1.0;
 	private boolean isInSparkInstruction = false;
 	private SORT_TYPE sdcSortType = SORT_TYPE.MATERIALIZE;
+ // private scalign factor var
+
 
 	public CompressionSettingsBuilder() {
 
