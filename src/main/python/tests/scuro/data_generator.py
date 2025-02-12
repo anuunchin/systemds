@@ -18,33 +18,78 @@
 # under the License.
 #
 # -------------------------------------------------------------
+import shutil
+
 import cv2
 import numpy as np
 from scipy.io.wavfile import write
 import random
 import os
 
-from systemds.scuro.modality.video_modality import VideoModality
-from systemds.scuro.modality.audio_modality import AudioModality
-from systemds.scuro.modality.text_modality import TextModality
+from systemds.scuro import VideoLoader, AudioLoader, TextLoader, UnimodalModality
+from systemds.scuro.modality.type import ModalityType
+
+
+def setup_data(modalities, num_instances, path):
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
+    os.makedirs(path)
+
+    indizes = [str(i) for i in range(0, num_instances)]
+
+    modalities_to_create = []
+    for modality in modalities:
+        mod_path = path + "/" + modality.name + "/"
+
+        if modality == ModalityType.VIDEO:
+            data_loader = VideoLoader(mod_path, indizes)
+        elif modality == ModalityType.AUDIO:
+            data_loader = AudioLoader(mod_path, indizes)
+        elif modality == ModalityType.TEXT:
+            data_loader = TextLoader(mod_path, indizes)
+        else:
+            raise "Modality not supported in DataGenerator"
+
+        modalities_to_create.append(UnimodalModality(data_loader, modality))
+
+    data_generator = TestDataGenerator(modalities_to_create, path)
+    data_generator.create_multimodal_data(num_instances)
+    return data_generator
 
 
 class TestDataGenerator:
     def __init__(self, modalities, path, balanced=True):
+
         self.modalities = modalities
+        self.modalities_by_type = {}
+        for modality in modalities:
+            self.modalities_by_type[modality.modality_type] = modality
+
+        self._indices = None
         self.path = path
         self.balanced = balanced
 
         for modality in modalities:
-            mod_path = f"{self.path}/{modality.name.lower()}/"
+            mod_path = f"{self.path}/{modality.modality_type.name}/"
             os.mkdir(mod_path)
             modality.file_path = mod_path
         self.labels = []
         self.label_path = f"{path}/labels.npy"
 
+    def get_modality_path(self, modality_type):
+        return self.modalities_by_type[modality_type].data_loader.source_path
+
+    @property
+    def indices(self):
+        if self._indices is None:
+            raise "No indices available, please call setup_data first"
+        return self._indices
+
     def create_multimodal_data(self, num_instances, duration=2, seed=42):
         speed_fast = 0
         speed_slow = 0
+        self._indices = [str(i) for i in range(0, num_instances)]
         for idx in range(num_instances):
             np.random.seed(seed)
             if self.balanced:
@@ -72,17 +117,17 @@ class TestDataGenerator:
                 speed_slow += 1
 
             for modality in self.modalities:
-                if isinstance(modality, VideoModality):
+                if modality.modality_type == ModalityType.VIDEO:
                     self.__create_video_data(idx, duration, 30, speed_factor)
-                if isinstance(modality, AudioModality):
+                if modality.modality_type == ModalityType.AUDIO:
                     self.__create_audio_data(idx, duration, speed_factor)
-                if isinstance(modality, TextModality):
+                if modality.modality_type == ModalityType.TEXT:
                     self.__create_text_data(idx, speed_factor)
 
         np.save(f"{self.path}/labels.npy", np.array(self.labels))
 
     def __create_video_data(self, idx, duration, fps, speed_factor):
-        path = f"{self.path}/video/{idx}.mp4"
+        path = f"{self.path}/VIDEO/{idx}.mp4"
 
         width, height = 160, 120
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -108,13 +153,13 @@ class TestDataGenerator:
         out.release()
 
     def __create_text_data(self, idx, speed_factor):
-        path = f"{self.path}/text/{idx}.txt"
+        path = f"{self.path}/TEXT/{idx}.txt"
 
         with open(path, "w") as f:
             f.write(f"The ball moves at speed factor {speed_factor:.2f}.")
 
     def __create_audio_data(self, idx, duration, speed_factor):
-        path = f"{self.path}/audio/{idx}.wav"
+        path = f"{self.path}/AUDIO/{idx}.wav"
         sample_rate = 44100
 
         t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)

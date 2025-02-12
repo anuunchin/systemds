@@ -25,14 +25,12 @@ import unittest
 import numpy as np
 from sklearn import svm
 from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
+from systemds.scuro.modality.type import ModalityType
 from systemds.scuro.aligner.dr_search import DRSearch
 from systemds.scuro.aligner.task import Task
-from systemds.scuro.modality.audio_modality import AudioModality
-from systemds.scuro.modality.text_modality import TextModality
-from systemds.scuro.modality.video_modality import VideoModality
 from systemds.scuro.models.model import Model
 from systemds.scuro.representations.average import Average
 from systemds.scuro.representations.bert import Bert
@@ -43,7 +41,7 @@ from systemds.scuro.representations.mel_spectrogram import MelSpectrogram
 from systemds.scuro.representations.multiplication import Multiplication
 from systemds.scuro.representations.resnet import ResNet
 from systemds.scuro.representations.sum import Sum
-from tests.scuro.data_generator import TestDataGenerator
+from tests.scuro.data_generator import setup_data
 
 import warnings
 
@@ -87,57 +85,54 @@ class TestDataLoaders(unittest.TestCase):
     video = None
     data_generator = None
     num_instances = 0
-    indizes = []
     representations = None
 
     @classmethod
     def setUpClass(cls):
         cls.test_file_path = "test_data_dr_search"
+        cls.num_instances = 20
+        modalities = [ModalityType.VIDEO, ModalityType.AUDIO, ModalityType.TEXT]
 
-        if os.path.isdir(cls.test_file_path):
-            shutil.rmtree(cls.test_file_path)
-
+        cls.data_generator = setup_data(
+            modalities, cls.num_instances, cls.test_file_path
+        )
         os.makedirs(f"{cls.test_file_path}/embeddings")
 
-        cls.num_instances = 8
-        cls.indizes = [str(i) for i in range(0, cls.num_instances)]
-        cls.video = VideoModality(
-            "", ResNet(f"{cls.test_file_path}/embeddings/resnet_embeddings.hdf5")
+        # TODO: adapt the representation so they return non aggregated values. Apply windowing operation instead
+
+        cls.bert = cls.data_generator.modalities_by_type[
+            ModalityType.TEXT
+        ].apply_representation(Bert())
+        cls.mel_spe = (
+            cls.data_generator.modalities_by_type[ModalityType.AUDIO]
+            .apply_representation(MelSpectrogram())
+            .flatten()
         )
-        cls.audio = AudioModality(
-            "",
-            MelSpectrogram(
-                output_file=f"{cls.test_file_path}/embeddings/mel_sp_embeddings.npy"
-            ),
+        cls.resnet = (
+            cls.data_generator.modalities_by_type[ModalityType.VIDEO]
+            .apply_representation(ResNet())
+            .window(10, "avg")
+            .flatten()
         )
-        cls.text = TextModality(
-            "",
-            Bert(
-                avg_layers=4,
-                output_file=f"{cls.test_file_path}/embeddings/bert_embeddings.pkl",
-            ),
-        )
-        cls.mods = [cls.video, cls.audio, cls.text]
-        cls.data_generator = TestDataGenerator(cls.mods, cls.test_file_path)
-        cls.data_generator.create_multimodal_data(cls.num_instances)
-        cls.text.read_all(cls.indizes)
-        cls.audio.read_all(cls.indizes)
-        cls.video.read_all([i for i in range(0, cls.num_instances)])
+        cls.mods = [cls.bert, cls.mel_spe, cls.resnet]
 
         split = train_test_split(
-            cls.indizes, cls.data_generator.labels, test_size=0.2, random_state=42
+            cls.data_generator.indices,
+            cls.data_generator.labels,
+            test_size=0.2,
+            random_state=42,
         )
         cls.train_indizes, cls.val_indizes = [int(i) for i in split[0]], [
             int(i) for i in split[1]
         ]
 
         for m in cls.mods:
-            m.data = scale_data(m.data, [int(i) for i in cls.train_indizes])
+            m.data = scale_data(m.data, cls.train_indizes)
 
         cls.representations = [
             Concatenation(),
             Average(),
-            RowMax(),
+            RowMax(100),
             Multiplication(),
             Sum(),
             LSTM(width=256, depth=3),

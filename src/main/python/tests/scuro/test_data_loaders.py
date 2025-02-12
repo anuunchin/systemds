@@ -22,14 +22,16 @@
 import os
 import shutil
 import unittest
-from systemds.scuro.modality.audio_modality import AudioModality
-from systemds.scuro.modality.text_modality import TextModality
-from systemds.scuro.modality.video_modality import VideoModality
+from systemds.scuro.modality.unimodal_modality import UnimodalModality
 from systemds.scuro.representations.bert import Bert
 from systemds.scuro.representations.mel_spectrogram import MelSpectrogram
 from systemds.scuro.representations.resnet import ResNet
-from systemds.scuro.representations.representation_dataloader import HDF5, NPY, Pickle
-from tests.scuro.data_generator import TestDataGenerator
+from tests.scuro.data_generator import setup_data
+
+from systemds.scuro.dataloader.audio_loader import AudioLoader
+from systemds.scuro.dataloader.video_loader import VideoLoader
+from systemds.scuro.dataloader.text_loader import TextLoader
+from systemds.scuro.modality.type import ModalityType
 
 
 class TestDataLoaders(unittest.TestCase):
@@ -40,41 +42,25 @@ class TestDataLoaders(unittest.TestCase):
     video = None
     data_generator = None
     num_instances = 0
-    indizes = []
 
     @classmethod
     def setUpClass(cls):
         cls.test_file_path = "test_data"
-
-        if os.path.isdir(cls.test_file_path):
-            shutil.rmtree(cls.test_file_path)
+        cls.num_instances = 2
+        cls.mods = [ModalityType.VIDEO, ModalityType.AUDIO, ModalityType.TEXT]
+        cls.data_generator = setup_data(cls.mods, cls.num_instances, cls.test_file_path)
 
         os.makedirs(f"{cls.test_file_path}/embeddings")
 
-        cls.num_instances = 2
-        cls.indizes = [str(i) for i in range(0, cls.num_instances)]
-        cls.video = VideoModality(
-            "", ResNet(f"{cls.test_file_path}/embeddings/resnet_embeddings.hdf5")
-        )
-        cls.audio = AudioModality(
-            "",
-            MelSpectrogram(
-                output_file=f"{cls.test_file_path}/embeddings/mel_sp_embeddings.npy"
-            ),
-        )
-        cls.text = TextModality(
-            "",
-            Bert(
-                avg_layers=4,
-                output_file=f"{cls.test_file_path}/embeddings/bert_embeddings.pkl",
-            ),
-        )
-        cls.mods = [cls.video, cls.audio, cls.text]
-        cls.data_generator = TestDataGenerator(cls.mods, cls.test_file_path)
-        cls.data_generator.create_multimodal_data(cls.num_instances)
-        cls.text.read_all(cls.indizes)
-        cls.audio.read_all(cls.indizes)
-        cls.video.read_all([i for i in range(0, cls.num_instances)])
+        cls.text_ref = cls.data_generator.modalities_by_type[
+            ModalityType.TEXT
+        ].apply_representation(Bert())
+        cls.audio_ref = cls.data_generator.modalities_by_type[
+            ModalityType.AUDIO
+        ].apply_representation(MelSpectrogram())
+        cls.video_ref = cls.data_generator.modalities_by_type[
+            ModalityType.VIDEO
+        ].apply_representation(ResNet())
 
     @classmethod
     def tearDownClass(cls):
@@ -82,35 +68,44 @@ class TestDataLoaders(unittest.TestCase):
         shutil.rmtree(cls.test_file_path)
 
     def test_load_audio_data_from_file(self):
-        load_audio = AudioModality(
-            f"{self.test_file_path}/embeddings/mel_sp_embeddings.npy", NPY()
+        audio_data_loader = AudioLoader(
+            self.data_generator.get_modality_path(ModalityType.AUDIO),
+            self.data_generator.indices,
         )
-        load_audio.read_all(self.indizes)
+        audio = UnimodalModality(
+            audio_data_loader, ModalityType.AUDIO
+        ).apply_representation(MelSpectrogram())
 
         for i in range(0, self.num_instances):
-            assert round(sum(self.audio.data[i]), 4) == round(
-                sum(load_audio.data[i]), 4
+            assert round(sum(sum(self.audio_ref.data[i])), 4) == round(
+                sum(sum(audio.data[i])), 4
             )
 
     def test_load_video_data_from_file(self):
-        load_video = VideoModality(
-            f"{self.test_file_path}/embeddings/resnet_embeddings.hdf5", HDF5()
+        video_data_loader = VideoLoader(
+            self.data_generator.get_modality_path(ModalityType.VIDEO),
+            self.data_generator.indices,
         )
-        load_video.read_all(self.indizes)
+        video = UnimodalModality(
+            video_data_loader, ModalityType.VIDEO
+        ).apply_representation(ResNet())
 
         for i in range(0, self.num_instances):
-            assert round(sum(self.video.data[i]), 4) == round(
-                sum(load_video.data[i]), 4
+            assert round(sum(sum(self.video_ref.data[i])), 4) == round(
+                sum(sum(video.data[i])), 4
             )
 
     def test_load_text_data_from_file(self):
-        load_text = TextModality(
-            f"{self.test_file_path}/embeddings/bert_embeddings.pkl", Pickle()
+        text_data_loader = TextLoader(
+            self.data_generator.get_modality_path(ModalityType.TEXT),
+            self.data_generator.indices,
         )
-        load_text.read_all(self.indizes)
+        text = UnimodalModality(
+            text_data_loader, ModalityType.TEXT
+        ).apply_representation(Bert())
 
         for i in range(0, self.num_instances):
-            assert round(sum(self.text.data[i]), 4) == round(sum(load_text.data[i]), 4)
+            assert round(sum(self.text_ref.data[i]), 4) == round(sum(text.data[i]), 4)
 
 
 if __name__ == "__main__":
