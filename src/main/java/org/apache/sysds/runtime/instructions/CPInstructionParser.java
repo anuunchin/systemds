@@ -64,6 +64,7 @@ import org.apache.sysds.runtime.instructions.cp.ParameterizedBuiltinCPInstructio
 import org.apache.sysds.runtime.instructions.cp.PrefetchCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuantilePickCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuantileSortCPInstruction;
+import org.apache.sysds.runtime.instructions.cp.QuantizedCompressionCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.QuaternaryCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.ReorgCPInstruction;
 import org.apache.sysds.runtime.instructions.cp.ReshapeCPInstruction;
@@ -484,7 +485,10 @@ public class CPInstructionParser extends InstructionParser {
 			
 			case DeCompression:
 				return DeCompressionCPInstruction.parseInstruction(str);
-				
+			
+			case QuantizeCompression:
+				return QuantizedCompressionCPInstruction.parseInstruction(str);				
+
 			case Local:
 				return LocalCPInstruction.parseInstruction(str);
 

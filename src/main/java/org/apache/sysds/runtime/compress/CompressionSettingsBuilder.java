@@ -55,6 +55,7 @@ public class CompressionSettingsBuilder {
 	private double minimumCompressionRatio = 1.0;
 	private boolean isInSparkInstruction = false;
 	private SORT_TYPE sdcSortType = SORT_TYPE.MATERIALIZE;
+	private double[] scaleFactors = null;
 
 	public CompressionSettingsBuilder() {
 
@@ -70,6 +71,11 @@ public class CompressionSettingsBuilder {
 		transposeInput = conf.getTextValue(DMLConfig.COMPRESSED_TRANSPOSE);
 		seed = DMLScript.SEED;
 
+	}
+
+	public CompressionSettingsBuilder setScaleFactor(double[] scaleFactors) {
+		this.scaleFactors = scaleFactors;
+		return this;
 	}
 
 	/**
@@ -334,6 +340,6 @@ public class CompressionSettingsBuilder {
 		return new CompressionSettings(samplingRatio, samplePower, allowSharedDictionary, transposeInput, seed, lossy,
 			validCompressions, sortValuesByLength, columnPartitioner, maxColGroupCoCode, coCodePercentage,
 			minimumSampleSize, maxSampleSize, estimationType, costType, minimumCompressionRatio, isInSparkInstruction,
-			sdcSortType);
+			sdcSortType, scaleFactors);
 	}
 }

@@ -29,6 +29,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.sysds.runtime.compress.CompressedMatrixBlock;
@@ -54,6 +56,7 @@ import org.apache.sysds.runtime.compress.estim.CompressedSizeInfo;
 import org.apache.sysds.runtime.compress.estim.CompressedSizeInfoColGroup;
 import org.apache.sysds.runtime.compress.lib.CLALibCombineGroups;
 import org.apache.sysds.runtime.compress.readers.ReaderColumnSelection;
+import org.apache.sysds.runtime.compress.readers.ReaderColumnSelectionQuantized;
 import org.apache.sysds.runtime.compress.utils.ACount;
 import org.apache.sysds.runtime.compress.utils.DblArray;
 import org.apache.sysds.runtime.compress.utils.DblArrayCountHashMap;
@@ -226,12 +229,12 @@ public class ColGroupFactory {
 		if(estC < actC * 0.75) {
 			String warning = "The estimate cost is significantly off : " + est;
 			LOG.debug(
-				String.format("time[ms]: %10.2f %25s est %10.0f -- act %10.0f distinct:%5d cols:%s wanted:%s\n\t\t%s", time,
-					retType, estC, actC, act.getNumValues(), cols, wanted, warning));
+				String.format("time[ms]: %10.2f %25s est %10.0f -- act %10.0f distinct:%5d cols:%s wanted:%s\n\t\t%s",
+					time, retType, estC, actC, act.getNumValues(), cols, wanted, warning));
 		}
 		else {
-			LOG.debug(String.format("time[ms]: %10.2f %25s est %10.0f -- act %10.0f distinct:%5d cols:%s wanted:%s", time,
-				retType, estC, actC, act.getNumValues(), cols, wanted));
+			LOG.debug(String.format("time[ms]: %10.2f %25s est %10.0f -- act %10.0f distinct:%5d cols:%s wanted:%s",
+				time, retType, estC, actC, act.getNumValues(), cols, wanted));
 		}
 
 	}
@@ -256,6 +259,7 @@ public class ColGroupFactory {
 		final IColIndex colIndexes = cg.getColumns();
 		final CompressionType ct = cg.getBestCompressionType();
 		final boolean t = cs.transposed;
+		LOG.debug("Compressing");
 
 		// Fast path compressions
 		if(ct == CompressionType.EMPTY && !t)
@@ -266,43 +270,59 @@ public class ColGroupFactory {
 			&& in.isInSparseFormat() //
 			&& t && (//
 			(colIndexes.size() > 1 && cg.getNumOffs() < 0.3 * nRow) //
-				|| colIndexes.size() == 1))
+				|| colIndexes.size() == 1)) {
+			LOG.debug("SDC or CONST in sparse format");
 			return compressSDCFromSparseTransposedBlock(colIndexes, cg.getNumVals(), cg.getTupleSparsity());
-		else if(ct == CompressionType.DDC)
-			return directCompressDDC(colIndexes, cg);
-		else if(ct == CompressionType.LinearFunctional)
+		}
+		else if(ct == CompressionType.DDC) {
+			LOG.debug("DDC");
+			return directCompressDDC(colIndexes, cg); // this works, but sparse stats are different
+		}
+		else if(ct == CompressionType.LinearFunctional) {
+			LOG.debug("Linear Function");
 			return compressLinearFunctional(colIndexes, in, cs);
+		}
 		else if(ct == CompressionType.DDCFOR) {
+			LOG.debug("DDCFOR");
 			AColGroup g = directCompressDDC(colIndexes, cg);
 			if(g instanceof ColGroupDDC)
 				return ColGroupDDCFOR.sparsifyFOR((ColGroupDDC) g);
 			return g;
 		}
 		else if(ct == CompressionType.SDC && colIndexes.size() == 1 && !t) {
-			return compressSDCSingleColDirectBlock(colIndexes, cg.getNumVals());
+			LOG.debug("SDC");
+			return compressSDCSingleColDirectBlock(colIndexes, cg.getNumVals()); // this works
 		}
 
 		final ABitmap ubm = BitmapEncoder.extractBitmap(colIndexes, in, cg.getNumVals(), cs);
-		if(ubm == null) // no values ... therefore empty
-			return new ColGroupEmpty(colIndexes);
-
+		if(ubm == null) {// no values ... therefore empty
+			LOG.debug("ubm empty");
+			return new ColGroupEmpty(colIndexes); // this works
+		}
 		final IntArrayList[] of = ubm.getOffsetList();
-		if(of.length == 1 && of[0].size() == nRow) // If this always constant
-			return ColGroupConst.create(colIndexes, DictionaryFactory.create(ubm));
+		if(of.length == 1 && of[0].size() == nRow) { // If this always constant
+			LOG.debug("Creating constant column group");
+			return ColGroupConst.create(colIndexes, DictionaryFactory.create(ubm)); // this works
+		}
 
 		final double tupleSparsity = colIndexes.size() > 4 ? cg.getTupleSparsity() : 1.0;
 
 		switch(ct) {
 			case RLE:
+				LOG.debug("compressRLE");
 				return ColGroupRLE.compressRLE(colIndexes, ubm, nRow, tupleSparsity);
 			case OLE:
+				LOG.debug("compressOLE");
 				return ColGroupOLE.compressOLE(colIndexes, ubm, nRow, tupleSparsity);
 			case CONST: // in case somehow one requested const, but it was not const column fall back to SDC.
+				LOG.debug("CONST");
 			case EMPTY:
 				LOG.warn("Requested " + ct + " on non constant column, fallback to SDC");
 			case SDC:
-				return compressSDC(colIndexes, nRow, ubm, cs, tupleSparsity);
+				LOG.debug("CONSTANT EMPTY OR SDC");
+				return compressSDC(colIndexes, nRow, ubm, cs, tupleSparsity); // this works, the others should work too
 			case SDCFOR:
+				LOG.debug("SDCFOR");
 				AColGroup g = compressSDC(colIndexes, nRow, ubm, cs, tupleSparsity);
 				if(g instanceof ColGroupSDC)
 					return ColGroupSDCFOR.sparsifyFOR((ColGroupSDC) g);
@@ -319,28 +339,115 @@ public class ColGroupFactory {
 		countElements(cMap, col);
 
 		double def = cMap.getMostFrequent();
+		LOG.debug("THis is the def" + def);
 		final int dictSize = cMap.size() - 1;
 		if(dictSize == 0)
 			return ColGroupConst.create(colIndexes, def);
 
 		int defCount = cMap.getC(def).count;
+		LOG.debug("Trying to replace with UIDs");
 		cMap.replaceWithUIDs(def);
 		IDictionary dict = Dictionary.create(cMap.getDictionary(dictSize));
 		IntArrayList offs = new IntArrayList(nRow - defCount);
+		LOG.debug("Trying to create map");
 		AMapToData map = MapToFactory.create(nRow - defCount, dictSize);
-		getOffsets(offs, map, cMap, col, def);
-
+		LOG.debug("Trying to get offsets");
+		if(cs.scaleFactors != null) {
+			getOffsetsScaled(offs, map, cMap, col, def);
+		}
+		else {
+			getOffsets(offs, map, cMap, col, def);
+		}
+		LOG.debug("Trying to create offset");
 		AOffset aoff = OffsetFactory.createOffset(offs);
-
+		LOG.debug("Trying to create colgroupSDC");
 		return ColGroupSDC.create(colIndexes, nRow, dict, new double[] {def}, aoff, map, null);
 
+	}
+
+	private void getOffsetsScaled(IntArrayList offs, AMapToData map, DoubleCountHashMap cMap, int col, double def) {
+		final double scaleFactor = cs.scaleFactors[0];
+
+		if(in.isInSparseFormat()) {
+			final SparseBlock sb = in.getSparseBlock();
+
+			if(def == 0) { // If zero is the default value
+				for(int r = 0; r < nRow; r++) {
+					if(sb.isEmpty(r))
+						continue; // Skip explicitly storing zero values
+
+					final int apos = sb.pos(r);
+					final int alen = sb.size(r) + apos;
+					final int[] aix = sb.indexes(r);
+					final int idx = Arrays.binarySearch(aix, apos, alen, col);
+
+					if(idx >= 0) {
+						double v = Math.floor(sb.values(r)[idx] * scaleFactor);
+						map.set(offs.size(), cMap.getId(v));
+						offs.appendValue(r);
+					}
+				}
+			}
+
+			else { // If zero is NOT the default value, track missing values explicitly
+				for(int r = 0; r < nRow; r++) {
+					if(sb.isEmpty(r)) {
+						map.set(offs.size(), cMap.getId(0.0));
+						offs.appendValue(r);
+					}
+					else {
+						final int apos = sb.pos(r);
+						final int alen = sb.size(r) + apos;
+						final int[] aix = sb.indexes(r);
+						final int idx = Arrays.binarySearch(aix, apos, alen, col);
+
+						if(idx < 0) { // Missing entry
+							map.set(offs.size(), cMap.getId(0.0));
+							offs.appendValue(r);
+						}
+						else {
+							double v = Math.floor(sb.values(r)[idx] * scaleFactor);
+							if(!Util.eq(v, def)) {
+								map.set(offs.size(), cMap.getId(v));
+								offs.appendValue(r);
+							}
+						}
+					}
+				}
+			}
+
+		}
+		else if(in.getDenseBlock().isContiguous()) {
+			final double[] dv = in.getDenseBlockValues();
+			int off = col;
+
+			for(int r = 0; r < nRow; r++, off += nCol) {
+				double scaledValue = Math.floor(dv[off] * scaleFactor);
+				if(!Util.eq(scaledValue, def)) {
+					map.set(offs.size(), cMap.getId(scaledValue));
+					offs.appendValue(r);
+				}
+			}
+		}
+		else {
+			final DenseBlock db = in.getDenseBlock();
+			for(int r = 0; r < nRow; r++) {
+				final double[] dv = db.values(r);
+				int off = db.pos(r) + col;
+				double scaledValue = Math.floor(dv[off] * scaleFactor);
+				if(!Util.eq(scaledValue, def)) {
+					map.set(offs.size(), cMap.getId(scaledValue));
+					offs.appendValue(r);
+				}
+			}
+		}
 	}
 
 	private void getOffsets(IntArrayList offs, AMapToData map, DoubleCountHashMap cMap, int col, double def) {
 
 		if(in.isInSparseFormat()) {
+			final SparseBlock sb = in.getSparseBlock();
 			if(def == 0) {
-				final SparseBlock sb = in.getSparseBlock();
 				for(int r = 0; r < nRow; r++) {
 					if(sb.isEmpty(r))
 						continue;
@@ -356,11 +463,8 @@ public class ColGroupFactory {
 				}
 			}
 			else {
-
-				final SparseBlock sb = in.getSparseBlock();
 				for(int r = 0; r < nRow; r++) {
 					if(sb.isEmpty(r)) {
-
 						map.set(offs.size(), cMap.getId(0.0));
 						offs.appendValue(r);
 					}
@@ -382,11 +486,13 @@ public class ColGroupFactory {
 						}
 					}
 				}
+
 			}
 		}
 		else if(in.getDenseBlock().isContiguous()) {
 			final double[] dv = in.getDenseBlockValues();
 			int off = col;
+
 			for(int r = 0; r < nRow; r++, off += nCol)
 				if(!Util.eq(dv[off], def)) {
 					map.set(offs.size(), cMap.getId(dv[off]));
@@ -407,16 +513,63 @@ public class ColGroupFactory {
 	}
 
 	private void countElements(DoubleCountHashMap map, int col) {
-		if(in.isInSparseFormat())
-			countElementsSparse(map, col);
-		else if(in.getDenseBlock().isContiguous())
-			countElementsDenseContiguous(map, col);
-		else
-			countElementsDenseGeneric(map, col);
+		if(cs.scaleFactors != null) {
+			// in.denseToSparse(); // remove this
+			if(in.isInSparseFormat()) {
+				LOG.debug("In SPARSE!!");
+				countElementsSparseScaled(map, col);
+			}
+			else if(in.getDenseBlock().isContiguous()) {
+				LOG.debug("In contiguous!!");
+				countElementsDenseContiguousScaled(map, col);
+			}
+			else {
+				LOG.debug("In Dense!!");
+				countElementsDenseGenericScaled(map, col);
+			}
+		}
+		else {
+			// in.denseToSparse(); // remove this
+			if(in.isInSparseFormat()) {
+				LOG.debug("In SPARSE!!");
+				countElementsSparse(map, col);
+			}
+			else if(in.getDenseBlock().isContiguous()) {
+				LOG.debug("In contiguous!!");
+				countElementsDenseContiguous(map, col);
+			}
+			else {
+				LOG.debug("In Dense!!");
+				countElementsDenseGeneric(map, col);
+			}
+		}
+	}
+
+	private void countElementsSparseScaled(DoubleCountHashMap map, int col) {
+		final SparseBlock sb = in.getSparseBlock();
+
+		double scaleFactor = cs.scaleFactors[0];
+		for(int r = 0; r < nRow; r++) {
+			if(sb.isEmpty(r))
+				map.increment(0.0);
+			else {
+				final int apos = sb.pos(r);
+				final int alen = sb.size(r) + apos;
+				final int[] aix = sb.indexes(r);
+				final int idx = Arrays.binarySearch(aix, apos, alen, col);
+				if(idx < 0) {
+					map.increment(0.0);
+				}
+				else {
+					map.increment(Math.floor(sb.values(r)[idx] * scaleFactor));
+				}
+			}
+		}
 	}
 
 	private void countElementsSparse(DoubleCountHashMap map, int col) {
 		final SparseBlock sb = in.getSparseBlock();
+
 		for(int r = 0; r < nRow; r++) {
 			if(sb.isEmpty(r))
 				map.increment(0.0);
@@ -433,11 +586,32 @@ public class ColGroupFactory {
 		}
 	}
 
+	private void countElementsDenseContiguousScaled(DoubleCountHashMap map, int col) {
+		final double[] dv = in.getDenseBlockValues();
+		int off = col;
+
+		double scaleFactor = cs.scaleFactors[0];
+		for(int r = 0; r < nRow; r++, off += nCol) {
+			map.increment(Math.floor(dv[off] * scaleFactor));
+		}
+	}
+
 	private void countElementsDenseContiguous(DoubleCountHashMap map, int col) {
 		final double[] dv = in.getDenseBlockValues();
 		int off = col;
+
 		for(int r = 0; r < nRow; r++, off += nCol)
 			map.increment(dv[off]);
+	}
+
+	private void countElementsDenseGenericScaled(DoubleCountHashMap map, int col) {
+		final DenseBlock db = in.getDenseBlock();
+		double scaleFactor = cs.scaleFactors[0];
+		for(int r = 0; r < nRow; r++) {
+			final double[] dv = db.values(r);
+			int off = db.pos(r) + col;
+			map.increment(Math.floor(dv[off] * scaleFactor));
+		}
 	}
 
 	private void countElementsDenseGeneric(DoubleCountHashMap map, int col) {
@@ -450,6 +624,7 @@ public class ColGroupFactory {
 	}
 
 	private AColGroup directCompressDDC(IColIndex colIndexes, CompressedSizeInfoColGroup cg) throws Exception {
+		// testing multicol
 		if(colIndexes.size() > 1)
 			return directCompressDDCMultiCol(colIndexes, cg);
 		else
@@ -464,14 +639,21 @@ public class ColGroupFactory {
 		// unlike multi-col no special handling of zero entries are needed.
 		if(cs.transposed)
 			readToMapDDCTransposed(col, map, d);
-		else
-			readToMapDDC(col, map, d);
+		else {
+			LOG.debug("Direct compressing with readToMapDDC");
+			if(cs.scaleFactors != null) {
+				readToMapDDCScaled(col, map, d);
+			}
+			else {
+				readToMapDDC(col, map, d);
+			}
+		}
 
 		if(map.size() == 0)
 			return new ColGroupEmpty(colIndexes);
 		IDictionary dict = DictionaryFactory.create(map);
 		final int nUnique = map.size();
-		final AMapToData resData = d.resize( nUnique);
+		final AMapToData resData = d.resize(nUnique);
 		return ColGroupDDC.create(colIndexes, dict, resData, null);
 	}
 
@@ -482,10 +664,14 @@ public class ColGroupFactory {
 
 		final DblArrayCountHashMap map = new DblArrayCountHashMap(Math.max(cg.getNumVals(), 64));
 		boolean extra;
-		if(nRow < CompressionSettings.PAR_DDC_THRESHOLD || k < csi.getNumberColGroups() || pool == null )
+		if(nRow < CompressionSettings.PAR_DDC_THRESHOLD || k < csi.getNumberColGroups() || pool == null) {
+			LOG.debug("Non parallel");
 			extra = readToMapDDC(colIndexes, map, d, 0, nRow, fill);
-		else
+		}
+		else {
+			LOG.debug("Parallel");
 			extra = parallelReadToMapDDC(colIndexes, map, d, nRow, fill, k);
+		}
 
 		if(map.size() == 0)
 			// If the column was empty.
@@ -504,7 +690,11 @@ public class ColGroupFactory {
 
 	private boolean readToMapDDC(IColIndex colIndexes, DblArrayCountHashMap map, AMapToData data, int rl, int ru,
 		int fill) {
-		ReaderColumnSelection reader = ReaderColumnSelection.createReader(in, colIndexes, cs.transposed, rl, ru);
+
+		ReaderColumnSelection reader = (cs.scaleFactors == null) ? ReaderColumnSelection.createReader(in, colIndexes,
+			cs.transposed, rl,
+			ru) : ReaderColumnSelectionQuantized.createReader(in, colIndexes, cs.transposed, rl, ru, cs.scaleFactors);
+
 		DblArray cellVals = reader.nextRow();
 		boolean extra = false;
 		int r = rl;
@@ -526,6 +716,48 @@ public class ColGroupFactory {
 			extra = true;
 
 		return extra;
+	}
+
+	private void readToMapDDCScaled(int col, DoubleCountHashMap map, AMapToData data) {
+		double scaleFactor = cs.scaleFactors[0];
+
+		if(in.isInSparseFormat()) {
+			// not good but could happen
+			final SparseBlock sb = in.getSparseBlock();
+			for(int r = 0; r < nRow; r++) {
+				if(sb.isEmpty(r))
+					data.set(r, map.increment(0.0));
+				else {
+					final int apos = sb.pos(r);
+					final int alen = sb.size(r) + apos;
+					final int[] aix = sb.indexes(r);
+					final int idx = Arrays.binarySearch(aix, apos, alen, col);
+					if(idx < 0)
+						data.set(r, map.increment(0.0));
+					else {
+						double scaledValue = Math.floor(sb.values(r)[idx] * scaleFactor);
+						data.set(r, map.increment(scaledValue));
+					}
+				}
+			}
+		}
+		else if(in.getDenseBlock().isContiguous()) {
+			final double[] dv = in.getDenseBlockValues();
+			int off = col;
+			for(int r = 0; r < nRow; r++, off += nCol) {
+				double scaledValue = Math.floor(dv[off] * scaleFactor);
+				data.set(r, map.increment(scaledValue));
+			}
+		}
+		else {
+			final DenseBlock db = in.getDenseBlock();
+			for(int r = 0; r < nRow; r++) {
+				final double[] dv = db.values(r);
+				int off = db.pos(r) + col;
+				double scaledValue = Math.floor(dv[off] * scaleFactor);
+				data.set(r, map.increment(scaledValue));
+			}
+		}
 	}
 
 	private void readToMapDDC(int col, DoubleCountHashMap map, AMapToData data) {
@@ -671,7 +903,7 @@ public class ColGroupFactory {
 			cs.sdcSortType);
 		AOffset indexes = OffsetFactory.createOffset(s.getIndexes());
 		AMapToData _data = s.getData();
-		_data = _data.resize( dict.getNumberOfValues(colIndexes.size()));
+		_data = _data.resize(dict.getNumberOfValues(colIndexes.size()));
 		return ColGroupSDC.create(colIndexes, rlen, dict, defaultTuple, indexes, _data, null);
 	}
 

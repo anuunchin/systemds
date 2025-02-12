@@ -46,8 +46,8 @@ public class CompressionSettings {
 	public static final int BITMAP_BLOCK_SZ = Character.MAX_VALUE;
 
 	/**
-	 * Sorting of values by physical length helps by 10-20%, especially for serial, while slight performance decrease for
-	 * parallel incl multi-threaded, hence not applied for distributed operations (also because compression time +
+	 * Sorting of values by physical length helps by 10-20%, especially for serial, while slight performance decrease
+	 * for parallel incl multi-threaded, hence not applied for distributed operations (also because compression time +
 	 * garbage collection increases)
 	 */
 	public final boolean sortTuplesByFrequency;
@@ -128,11 +128,19 @@ public class CompressionSettings {
 	/** The sorting type used in sorting/joining offsets to create SDC groups */
 	public final SORT_TYPE sdcSortType;
 
+<<<<<<< Updated upstream
+=======
+	/** if the settings have been logged already. */
+	public static boolean printedStatus = false;
+
+	public final double[] scaleFactors;
+
+>>>>>>> Stashed changes
 	protected CompressionSettings(double samplingRatio, double samplePower, boolean allowSharedDictionary,
 		String transposeInput, int seed, boolean lossy, EnumSet<CompressionType> validCompressions,
 		boolean sortValuesByLength, PartitionerType columnPartitioner, int maxColGroupCoCode, double coCodePercentage,
 		int minimumSampleSize, int maxSampleSize, EstimationType estimationType, CostType costComputationType,
-		double minimumCompressionRatio, boolean isInSparkInstruction, SORT_TYPE sdcSortType) {
+		double minimumCompressionRatio, boolean isInSparkInstruction, SORT_TYPE sdcSortType, double[] scaleFactors) {
 		this.samplingRatio = samplingRatio;
 		this.samplePower = samplePower;
 		this.allowSharedDictionary = allowSharedDictionary;
@@ -151,7 +159,14 @@ public class CompressionSettings {
 		this.minimumCompressionRatio = minimumCompressionRatio;
 		this.isInSparkInstruction = isInSparkInstruction;
 		this.sdcSortType = sdcSortType;
+<<<<<<< Updated upstream
 		if(LOG.isDebugEnabled())
+=======
+		this.scaleFactors = scaleFactors;
+		
+		if(!printedStatus && LOG.isDebugEnabled()) {
+			printedStatus = true;
+>>>>>>> Stashed changes
 			LOG.debug(this.toString());
 	}
 
