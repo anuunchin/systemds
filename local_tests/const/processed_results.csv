@@ -1,0 +1,10 @@
+file,average_time
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestFused.log, 80.316575
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTest3.log, 192.830921
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestNonFused3.log, 597.642692
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestFused1.log, 87.939158
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestNonFused2.log, 211.285979
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestFused3.log, 208.881542
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestFused2.log, 162.020762
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestNonFused1.log, 81.853379
+/Users/anuunchinbat/Desktop/systemDS/systemds/local_tests/simpleTestNonFused.log, 93.371054

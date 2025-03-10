@@ -1,0 +1,216 @@
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+159.999167
+SystemDS Statistics:
+Total execution time:		0,194 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+257.40125
+SystemDS Statistics:
+Total execution time:		0,291 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+145.9465
+SystemDS Statistics:
+Total execution time:		0,191 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+107.762042
+SystemDS Statistics:
+Total execution time:		0,156 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+244.964833
+SystemDS Statistics:
+Total execution time:		0,311 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+205.453709
+SystemDS Statistics:
+Total execution time:		0,228 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+187.241708
+SystemDS Statistics:
+Total execution time:		0,238 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+135.116917
+SystemDS Statistics:
+Total execution time:		0,161 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+152.915041
+SystemDS Statistics:
+Total execution time:		0,173 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+158.117542
+SystemDS Statistics:
+Total execution time:		0,184 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+151.168708
+SystemDS Statistics:
+Total execution time:		0,206 sec.
+
+###############################################################################
+#  SYSTEMDS_ROOT= /Users/anuunchinbat/Desktop/systemDS/systemds
+#  SYSTEMDS_JAR_FILE= /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar
+#  SYSDS_EXEC_MODE= singlenode
+#  CONFIG_FILE= -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml
+#  LOG4JPROP= -Dlog4j.configuration=file:log4j-compression.properties
+#  HADOOP_HOME= /Users/anuunchinbat/Desktop/systemDS/systemds/src/test/config/hadoop_bin_windows/bin/hadoop
+#
+#  Running script local_tests/simpleTest1.dml locally with opts: 
+#  Executing command:    java -Xmx4g -Xms4g -Xmn400m    -Dlog4j.configuration=file:log4j-compression.properties   -jar /Users/anuunchinbat/Desktop/systemDS/systemds/target/systemds-3.3.0-SNAPSHOT.jar   -f local_tests/simpleTest1.dml   -exec singlenode   -config /Users/anuunchinbat/Desktop/systemDS/systemds/conf/SystemDS-config-defaults.xml   
+###############################################################################
+Checksum (forces execution):
+59815.0
+ELAPSED TIME
+140.140917
+SystemDS Statistics:
+Total execution time:		0,167 sec.
+

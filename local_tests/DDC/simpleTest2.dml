@@ -1,0 +1,22 @@
+# simpleTest.dml
+
+A = rand(rows=2000, cols=3000, min=1, max=5, pdf="uniform", seed=42);
+S = matrix(0.5, rows=2000, cols=1);
+
+t1 = time();
+
+Q = floor(A * S)
+
+C = compress(Q)
+
+t2 = time();
+
+dummy = sum(C); 
+print("Checksum (forces execution):");
+print(dummy);
+
+elapsed_time = (t2 - t1) / 1000000;
+print("ELAPSED TIME")
+print(elapsed_time);
+
+
