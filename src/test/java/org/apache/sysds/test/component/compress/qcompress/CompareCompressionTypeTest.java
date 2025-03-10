@@ -55,20 +55,18 @@ public class CompareCompressionTypeTest {
 	@Test
 	public void testCompareBestCompressionTypeForTwoMatricesDDC() {
 		try {
-			Random r = new Random(1234);
-			int k = 4;
+            int k = 4;
+            long seed = 1234;
 
 			// Generate first floored matrix and compute compression info
-			MatrixBlock m0 = generateTestMatrix(10000, 500, 1, 100, 1.0, r, true);
+			MatrixBlock m0 = generateTestMatrix(10000, 500, 1, 100, 1.0, seed, true);
 			CompressionSettings cs0 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
 				.setSeed(1234).create();
 			AComEst estimator0 = ComEstFactory.createEstimator(m0, cs0, k);
 			CompressedSizeInfo compressedGroups0 = estimator0.computeCompressedSizeInfos(k);
 
 			// Generate second matrix full-precision matrix that will be internally scaled by 1.0 and floored and
-			// compute
-			// compression info
-			MatrixBlock m1 = generateTestMatrix(10000, 500, 1, 100, 1.0, r, false);
+			MatrixBlock m1 = generateTestMatrix(10000, 500, 1, 100, 1.0, seed, false);
 			double[] scaleFactor = {1.0};
 			CompressionSettings cs1 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
 				.setScaleFactor(scaleFactor).setSeed(1234).create();
@@ -104,20 +102,57 @@ public class CompareCompressionTypeTest {
 	@Test
 	public void testCompareBestCompressionTypeForTwoMatricesConst() {
 		try {
-			Random r = new Random(1234);
-			int k = 4;
+            int k = 4;
+            long seed = 1234;
 
 			// Generate first floored matrix and compute compression info
-			MatrixBlock m0 = generateTestMatrix(10000, 500, 1, 1, 1.0, r, true);
+			MatrixBlock m0 = generateTestMatrix(10000, 500, 1, 1, 1.0, seed, true);
 			CompressionSettings cs0 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
 				.setSeed(1234).create();
 			AComEst estimator0 = ComEstFactory.createEstimator(m0, cs0, k);
 			CompressedSizeInfo compressedGroups0 = estimator0.computeCompressedSizeInfos(k);
 
 			// Generate second matrix full-precision matrix that will be internally scaled by 1.0 and floored and
-			// compute
-			// compression info
-			MatrixBlock m1 = generateTestMatrix(10000, 500, 1, 1, 1.0, r, false);
+			MatrixBlock m1 = generateTestMatrix(10000, 500, 1, 1, 1.0, seed, false);
+			double[] scaleFactor = {1.0};
+			CompressionSettings cs1 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
+				.setScaleFactor(scaleFactor).setSeed(1234).create();
+			AComEst estimator1 = ComEstFactory.createEstimator(m1, cs1, k);
+			CompressedSizeInfo compressedGroups1 = estimator1.computeCompressedSizeInfos(k);
+
+			List<CompressedSizeInfoColGroup> groups0 = compressedGroups0.getInfo();
+			List<CompressedSizeInfoColGroup> groups1 = compressedGroups1.getInfo();
+
+			assertEquals("Mismatch in number of compressed groups", groups0.size(), groups1.size());
+
+			for(int i = 0; i < groups0.size(); i++) {
+				assertEquals("Best compression type mismatch at index " + i, groups0.get(i).getBestCompressionType(),
+					groups1.get(i).getBestCompressionType());
+			}
+
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			fail("Compression extraction failed: " + e.getMessage());
+		}
+	}
+
+
+	@Test
+	public void testCompareBestCompressionTypeForTwoMatricesSparse() {
+		try {
+            int k = 4;
+            long seed = 1234;
+
+			// Generate first floored matrix and compute compression info
+			MatrixBlock m0 = generateTestMatrix(10000, 500, 1, 1, 0.05, seed, true);
+			CompressionSettings cs0 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
+				.setSeed(1234).create();
+			AComEst estimator0 = ComEstFactory.createEstimator(m0, cs0, k);
+			CompressedSizeInfo compressedGroups0 = estimator0.computeCompressedSizeInfos(k);
+
+			// Generate second matrix full-precision matrix that will be internally scaled by 1.0 and floored and
+			MatrixBlock m1 = generateTestMatrix(10000, 500, 1, 1, 0.05, seed, false);
 			double[] scaleFactor = {1.0};
 			CompressionSettings cs1 = new CompressionSettingsBuilder().setColumnPartitioner(PartitionerType.GREEDY)
 				.setScaleFactor(scaleFactor).setSeed(1234).create();
@@ -144,10 +179,9 @@ public class CompareCompressionTypeTest {
 	/**
 	 * Generate a test matrix with specified dimensions, value range, and sparsity.
 	 */
-	private static MatrixBlock generateTestMatrix(int nRow, int nCol, int min, int max, double s, Random r,
+	private static MatrixBlock generateTestMatrix(int nRow, int nCol, int min, int max, double s, long seed,
 		boolean floored) {
-		final int m = Integer.MAX_VALUE;
-		MatrixBlock mb = TestUtils.generateTestMatrixBlock(nRow, nCol, min, max, s, r.nextInt(m));
+		MatrixBlock mb = TestUtils.generateTestMatrixBlock(nRow, nCol, min, max, s, seed);
 		return floored ? TestUtils.floor(mb) : mb;
 	}
 
